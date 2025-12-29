@@ -1,7 +1,7 @@
 "use client";
 import { ToolCardProps } from "@/@types/toolCardType";
 import { motion } from "framer-motion";
-import { FileText, ImageIcon, ArrowRight } from "lucide-react";
+import { FileText, ImageIcon, ArrowRight, File } from "lucide-react";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -38,6 +38,13 @@ export default function HomePage() {
           desc="Remove backgrounds and optimize images using local AI models."
           icon={<ImageIcon className="text-accent" size={32} />}
           href="/tools/image-pro"
+          accent="border-accent/20"
+        />
+        <ToolCard
+          title="QuickReduce Pro"
+          desc="Reduce Pdf or Image Size using local AI models."
+          icon={<File className="text-accent" size={32} />}
+          href="/tools/quick-reduce"
           accent="border-accent/20"
         />
       </section>
