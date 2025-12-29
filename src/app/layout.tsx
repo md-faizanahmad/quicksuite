@@ -1,34 +1,35 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProviders";
+import Header from "@/components/layouts/Header";
+import Footer from "@/components/layouts/Footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "QuickSuite",
-  description: "Offline Free Tool by Quick Community",
+  title: "QuickSuite | Privacy-First Utilities",
+  description: "100% Client-side PDF and Image tools.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ThemeProvider>{children}</ThemeProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} min-h-screen flex flex-col`}>
+        <ThemeProvider>
+          {/* Header stays at the top of every page */}
+          <Header />
+
+          {/* The flex-grow ensures the footer stays at the bottom */}
+          <div className="grow">{children}</div>
+
+          {/* Footer stays at the bottom of every page */}
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );

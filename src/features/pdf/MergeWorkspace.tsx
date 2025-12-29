@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, Reorder, AnimatePresence } from "framer-motion";
-import { FileText, X, GripVertical, Plus, Zap } from "lucide-react";
+import { Reorder, AnimatePresence } from "framer-motion";
+import { FileText, X, GripVertical, Plus, Zap, Loader2 } from "lucide-react";
+import { validatePDFSelection } from "@/lib/validation";
+import { mergePDFs } from "@/lib/pdf-engine";
 
-interface PDFFile {
+interface QueuedFile {
   id: string;
   file: File;
   name: string;
@@ -12,109 +14,125 @@ interface PDFFile {
 }
 
 export default function MergeWorkspace() {
-  const [files, setFiles] = useState<PDFFile[]>([]);
+  const [files, setFiles] = useState<QueuedFile[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files).map((file) => ({
-        id: Math.random().toString(36).substr(2, 9),
-        file,
-        name: file.name,
-        size: (file.size / 1024 / 1024).toFixed(2) + " MB",
-      }));
-      setFiles((prev) => [...prev, ...newFiles]);
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const incoming = Array.from(e.target.files);
+
+    const error = validatePDFSelection(files.length, incoming);
+    if (error) return alert(error);
+
+    const newEntries = incoming.map((f) => ({
+      id: crypto.randomUUID(),
+      file: f,
+      name: f.name,
+      size: (f.size / (1024 * 1024)).toFixed(2) + " MB",
+    }));
+
+    setFiles((prev) => [...prev, ...newEntries]);
+  };
+
+  const handleMerge = async () => {
+    setIsProcessing(true);
+    try {
+      const blob = await mergePDFs(files.map((f) => f.file));
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `QuickSuite_Merged_${Date.now()}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert("Merge failed. Check console for details.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const removeFile = (id: string) => {
-    setFiles((prev) => prev.filter((f) => f.id !== id));
-  };
-
   return (
-    <section className="max-w-4xl mx-auto mt-12 p-6">
+    <div className="space-y-8">
+      {/* Dynamic Header Action */}
+      <div className="flex items-center justify-between sticky top-20 z-30 bg-background/80 backdrop-blur py-4">
+        <span className="text-xs font-black tracking-widest text-foreground/30 uppercase">
+          Queue: {files.length} / 15
+        </span>
+        {files.length >= 2 && (
+          <button
+            onClick={handleMerge}
+            disabled={isProcessing}
+            className="flex items-center gap-2 px-8 py-3 bg-primary text-black font-bold rounded-xl hover:shadow-[0_0_25px_rgba(var(--color-primary),0.5)] disabled:opacity-50 transition-all"
+          >
+            {isProcessing ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Zap size={18} fill="currentColor" />
+            )}
+            {isProcessing ? "PROCESSING..." : "GENERATE MERGED PDF"}
+          </button>
+        )}
+      </div>
+
       {/* Upload Zone */}
-      <motion.div
-        whileHover={{ scale: 1.01 }}
-        className="relative group border-2 border-dashed border-foreground/10 rounded-3xl p-12 text-center bg-card hover:border-primary/50 transition-all cursor-pointer overflow-hidden"
-      >
+      <div className="relative border-2 border-dashed border-foreground/10 rounded-3xl p-12 hover:border-primary/40 bg-card/30 transition-colors text-center">
         <input
           type="file"
           multiple
           accept=".pdf"
-          onChange={handleFileChange}
-          className="absolute inset-0 opacity-0 cursor-pointer z-10"
+          onChange={handleUpload}
+          className="absolute inset-0 opacity-0 cursor-pointer"
         />
-        <div className="flex flex-col items-center gap-4">
-          <div className="p-4 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-black transition-colors">
-            <Plus size={32} />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold">Drop PDFs here</h3>
-            <p className="text-foreground/50">or click to browse locally</p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* File List / Reorderable Area */}
-      <div className="mt-12 space-y-4">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-sm font-black uppercase tracking-widest text-foreground/40">
-            Merge Queue ({files.length})
-          </h2>
-          {files.length > 1 && (
-            <button className="flex items-center gap-2 px-6 py-2 bg-primary text-black font-bold rounded-full hover:shadow-[0_0_20px_rgba(var(--color-primary),0.4)] transition-all">
-              <Zap size={16} fill="currentColor" />
-              MERGE FILES
-            </button>
-          )}
-        </div>
-
-        <Reorder.Group
-          axis="y"
-          values={files}
-          onReorder={setFiles}
-          className="space-y-3"
-        >
-          <AnimatePresence mode="popLayout">
-            {files.map((file) => (
-              <Reorder.Item
-                key={file.id}
-                value={file}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="flex items-center gap-4 p-4 bg-card border border-foreground/5 rounded-2xl group active:cursor-grabbing"
-              >
-                <GripVertical
-                  size={20}
-                  className="text-foreground/20 cursor-grab"
-                />
-                <div className="p-2 rounded-lg bg-foreground/5">
-                  <FileText size={24} className="text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold truncate">{file.name}</p>
-                  <p className="text-xs text-foreground/40">{file.size}</p>
-                </div>
-                <button
-                  onClick={() => removeFile(file.id)}
-                  className="p-2 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </Reorder.Item>
-            ))}
-          </AnimatePresence>
-        </Reorder.Group>
-
-        {files.length === 0 && (
-          <div className="text-center py-20 border border-foreground/5 rounded-3xl bg-foreground/[0.02]">
-            <p className="text-foreground/20 italic">
-              No files selected for processing.
-            </p>
-          </div>
-        )}
+        <Plus className="mx-auto mb-4 text-primary" size={40} />
+        <p className="font-bold text-lg">Add PDF Documents</p>
+        <p className="text-sm text-foreground/40">
+          Files stay local to your browser
+        </p>
       </div>
-    </section>
+
+      {/* Reorderable List */}
+      <Reorder.Group
+        axis="y"
+        values={files}
+        onReorder={setFiles}
+        className="space-y-3"
+      >
+        <AnimatePresence>
+          {files.map((item) => (
+            <Reorder.Item
+              key={item.id}
+              value={item}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="flex items-center gap-4 p-5 bg-card border border-foreground/5 rounded-2xl group cursor-default"
+            >
+              <GripVertical
+                className="text-foreground/20 cursor-grab active:cursor-grabbing"
+                size={20}
+              />
+              <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                <FileText size={20} />
+              </div>
+              <div className="flex-1 truncate pr-4">
+                <p className="font-bold text-sm truncate">{item.name}</p>
+                <p className="text-[10px] text-foreground/40 uppercase font-medium">
+                  {item.size}
+                </p>
+              </div>
+              <button
+                onClick={() =>
+                  setFiles((f) => f.filter((x) => x.id !== item.id))
+                }
+                className="text-foreground/20 hover:text-red-500 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </Reorder.Item>
+          ))}
+        </AnimatePresence>
+      </Reorder.Group>
+    </div>
   );
 }
