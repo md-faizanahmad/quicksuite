@@ -2,17 +2,22 @@
 @config "../../tailwind.config.ts";
 
 @theme {
-  --color-background: oklch(15% 0.02 240);
-  --color-foreground: oklch(98% 0 0);
-  --color-primary: oklch(70% 0.2 191);
-  --color-accent: oklch(60% 0.25 263);
-  --color-card: oklch(18% 0.02 240);
+  --color-background: oklch(14% 0.01 257);
+  --color-foreground: oklch(92% 0.01 257);
+  /* Primary Sky-400 color */
+  --color-primary: #38bdf8;
+  --color-card: oklch(18% 0.02 257);
+  --color-border: oklch(25% 0.02 257);
 }
 
 .light {
-  --color-background: oklch(98% 0.01 240);
-  --color-foreground: oklch(10% 0.02 240);
-  --color-card: oklch(100% 0 0);
+  --color-background: oklch(99% 0 0);
+  --color-foreground: #000000; /* Black text in light mode */
+  --color-card: oklch(96% 0.01 257);
+}
+
+.dark {
+  --color-foreground: #ffffff; /* White text in dark mode */
 }
 
 button,
@@ -22,10 +27,15 @@ a {
 }
 @layer base {
   body {
-    @apply bg-background text-foreground antialiased selection:bg-primary/30;
-    overflow-x: hidden;
+    @apply bg-background text-foreground antialiased;
+    /* Prevent rubber-banding on iOS and handle notches */
+    overscroll-behavior-y: none;
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-top: env(safe-area-inset-top);
   }
-
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
   /* The Background Layer */
   body::before {
     content: "";

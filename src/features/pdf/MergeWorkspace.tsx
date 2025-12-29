@@ -1,8 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { Reorder, AnimatePresence } from "framer-motion";
-import { FileText, X, GripVertical, Plus, Zap, Loader2 } from "lucide-react";
+import { motion, Reorder, AnimatePresence } from "framer-motion";
+import {
+  X,
+  GripHorizontal,
+  Plus,
+  Zap,
+  Loader2,
+  CheckCircle2,
+  RefreshCcw,
+} from "lucide-react";
 import { validatePDFSelection } from "@/lib/validation";
 import { mergePDFs } from "@/lib/pdf-engine";
 
@@ -13,14 +21,20 @@ interface QueuedFile {
   size: string;
 }
 
+type MergeStatus = "idle" | "processing" | "completed";
+
 export default function MergeWorkspace() {
   const [files, setFiles] = useState<QueuedFile[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [status, setStatus] = useState<MergeStatus>("idle");
+  const [mergedUrl, setMergedUrl] = useState<string | null>(null);
 
+  /**
+   * INFO: handleUpload processes files 100% client-side.
+   * Files are converted to metadata objects for the UI queue.
+   */
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const incoming = Array.from(e.target.files);
-
     const error = validatePDFSelection(files.length, incoming);
     if (error) return alert(error);
 
@@ -30,94 +44,111 @@ export default function MergeWorkspace() {
       name: f.name,
       size: (f.size / (1024 * 1024)).toFixed(2) + " MB",
     }));
-
     setFiles((prev) => [...prev, ...newEntries]);
+    if (status === "completed") resetWorkspace();
   };
 
+  /**
+   * INFO: Clears the generated Blob URL and resets the pipeline state.
+   */
+  const resetWorkspace = () => {
+    if (mergedUrl) URL.revokeObjectURL(mergedUrl);
+    setMergedUrl(null);
+    setStatus("idle");
+  };
+
+  /**
+   * INFO: The core engine call. Merges documents using pdf-lib in a web worker/main thread.
+   */
   const handleMerge = async () => {
-    setIsProcessing(true);
+    setStatus("processing");
     try {
       const blob = await mergePDFs(files.map((f) => f.file));
       const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `QuickSuite_Merged_${Date.now()}.pdf`;
-      link.click();
-      URL.revokeObjectURL(url);
+      setMergedUrl(url);
+      setStatus("completed");
     } catch (err) {
-      console.error(err);
-      alert("Merge failed. Check console for details.");
-    } finally {
-      setIsProcessing(false);
+      console.error("Merge Logic Error:", err);
+      setStatus("idle");
     }
   };
 
   return (
-    <div className="space-y-8">
-      {/* Dynamic Header Action */}
-      <div className="flex items-center justify-between sticky top-20 z-30 bg-background/80 backdrop-blur py-4">
-        <span className="text-xs font-black tracking-widest text-foreground/30 uppercase">
-          Queue: {files.length} / 15
-        </span>
-        {files.length >= 2 && (
-          <button
-            onClick={handleMerge}
-            disabled={isProcessing}
-            className="flex items-center gap-2 px-8 py-3 bg-primary text-black font-bold rounded-xl hover:shadow-[0_0_25px_rgba(var(--color-primary),0.5)] disabled:opacity-50 transition-all"
+    <div className="max-w-4xl mx-auto px-4 space-y-8 pb-32 md:pb-12">
+      {/* SUCCESS OVERLAY */}
+      <AnimatePresence>
+        {status === "completed" && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-6 rounded-3xl bg-green-500/10 border border-green-500/20 flex items-center justify-between"
           >
-            {isProcessing ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <Zap size={18} fill="currentColor" />
-            )}
-            {isProcessing ? "PROCESSING..." : "GENERATE MERGED PDF"}
-          </button>
+            <div className="flex items-center gap-3 text-green-500">
+              <CheckCircle2 size={24} />
+              <span className="font-bold text-sm">MERGE READY</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={resetWorkspace}
+                className="p-2 text-foreground/40"
+              >
+                <RefreshCcw size={18} />
+              </button>
+              <a
+                href={mergedUrl!}
+                download="Merged.pdf"
+                className="bg-green-500 text-black px-4 py-2 rounded-xl font-bold text-sm"
+              >
+                DOWNLOAD
+              </a>
+            </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
 
-      {/* Upload Zone */}
-      <div className="relative border-2 border-dashed border-foreground/10 rounded-3xl p-12 hover:border-primary/40 bg-card/30 transition-colors text-center">
+      {/* STAGING AREA (Always visible unless completed) */}
+      <div className="relative group">
         <input
           type="file"
           multiple
           accept=".pdf"
           onChange={handleUpload}
-          className="absolute inset-0 opacity-0 cursor-pointer"
+          className="absolute inset-0 opacity-0 cursor-pointer z-10"
         />
-        <Plus className="mx-auto mb-4 text-primary" size={40} />
-        <p className="font-bold text-lg">Add PDF Documents</p>
-        <p className="text-sm text-foreground/40">
-          Files stay local to your browser
-        </p>
+        <div className="border-2 border-dashed border-primary/20 rounded-3xl p-10 text-center bg-primary/5 hover:border-primary/50 transition-all">
+          <Plus className="mx-auto mb-2 text-primary" size={28} />
+          <p className="font-bold text-sm dark:text-white light:text-black">
+            STAGE DOCUMENTS
+          </p>
+          <p className="text-[10px] text-foreground/40 uppercase tracking-widest">
+            Local Privacy Guaranteed
+          </p>
+        </div>
       </div>
 
-      {/* Reorderable List */}
+      {/* QUEUE LIST */}
       <Reorder.Group
         axis="y"
         values={files}
         onReorder={setFiles}
-        className="space-y-3"
+        className="space-y-2"
       >
-        <AnimatePresence>
+        <AnimatePresence mode="popLayout">
           {files.map((item) => (
             <Reorder.Item
               key={item.id}
               value={item}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="flex items-center gap-4 p-5 bg-card border border-foreground/5 rounded-2xl group cursor-default"
+              className="flex items-center gap-4 p-4 bg-card border border-border rounded-2xl group"
             >
-              <GripVertical
-                className="text-foreground/20 cursor-grab active:cursor-grabbing"
+              <GripHorizontal
+                className="text-foreground/10 group-hover:text-primary transition-colors cursor-grab"
                 size={20}
               />
-              <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                <FileText size={20} />
-              </div>
-              <div className="flex-1 truncate pr-4">
-                <p className="font-bold text-sm truncate">{item.name}</p>
-                <p className="text-[10px] text-foreground/40 uppercase font-medium">
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm truncate dark:text-white light:text-black">
+                  {item.name}
+                </p>
+                <p className="text-[10px] font-mono text-foreground/30">
                   {item.size}
                 </p>
               </div>
@@ -125,14 +156,38 @@ export default function MergeWorkspace() {
                 onClick={() =>
                   setFiles((f) => f.filter((x) => x.id !== item.id))
                 }
-                className="text-foreground/20 hover:text-red-500 transition-colors"
+                className="text-foreground/20 hover:text-red-500"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </Reorder.Item>
           ))}
         </AnimatePresence>
       </Reorder.Group>
+
+      {/* FIXED ACTION BUTTON (Phone Friendly) */}
+      <div className=" bottom-6 left-6 right-6 md:relative md:bottom-0 md:left-0 md:right-0 z-50">
+        <button
+          onClick={handleMerge}
+          disabled={
+            files.length < 2 ||
+            status === "processing" ||
+            status === "completed"
+          }
+          className="w-full flex items-center justify-center gap-3 px-8 py-5 bg-primary text-black font-black rounded-2xl shadow-xl shadow-primary/20 active:scale-95 transition-all disabled:opacity-20 disabled:shadow-none"
+        >
+          {status === "processing" ? (
+            <Loader2 className="animate-spin" size={20} />
+          ) : (
+            <Zap size={20} fill="black" />
+          )}
+          <span className="uppercase tracking-tighter italic">
+            {status === "processing"
+              ? "Merging..."
+              : `Merge ${files.length} Documents`}
+          </span>
+        </button>
+      </div>
     </div>
   );
 }
