@@ -11,7 +11,9 @@ export default function Header() {
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "Tools", href: "/tools" },
+    { name: "PDF Merge", href: "/tools/pdf-merge" },
+    { name: "Quick Reduce", href: "/tools/quick-reduce" },
+    { name: "Image Pro", href: "/tools/image-pro" },
   ];
 
   return (
