@@ -1,18 +1,43 @@
+"use client";
+
 import ReduceWorkspace from "@/features/reduce/ReduceWorkspace";
+import { motion } from "framer-motion";
+import { Zap } from "lucide-react";
 
 export default function QuickReducePage() {
   return (
-    <main className="pt-32 pb-20 px-6 min-h-screen">
-      <div className="max-w-2xl mx-auto text-center mb-12">
-        <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-4 uppercase italic">
-          Quick<span className="text-primary">Reduce</span>
-        </h1>
-        <p className="text-foreground/60 max-w-lg mx-auto text-sm">
+    <main className="pt-32 pb-20 px-6 min-h-screen flex flex-col items-center">
+      <section className="max-w-4xl mx-auto text-center mb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest mb-6 text-primary"
+        >
+          <Zap size={12} fill="currentColor" /> Strict Privacy
+        </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-5xl md:text-7xl font-black tracking-tighter mb-6 leading-[0.9] uppercase"
+        >
+          QUICK<span className="text-primary italic">REDUCE.</span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-foreground/60 max-w-xl mx-auto font-medium text-lg"
+        >
           Compress PDFs and Images to strict size limits without uploading a
-          single byte to a server.
-        </p>
-      </div>
-      <ReduceWorkspace />
+          single byte to any server.
+        </motion.p>
+      </section>
+
+      <section className="w-full">
+        <ReduceWorkspace />
+      </section>
     </main>
   );
 }
