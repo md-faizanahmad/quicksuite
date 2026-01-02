@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
   Sparkles,
@@ -9,9 +9,11 @@ import {
   Loader2,
   ImageIcon,
   RefreshCcw,
+  Crop as CropIcon,
 } from "lucide-react";
 import { processBackgroundRemoval } from "@/lib/image-pro-engine";
 import Image from "next/image";
+import Cropper, { Area } from "react-easy-crop";
 
 export default function ImageProWorkspace() {
   const [mounted, setMounted] = useState(false);
@@ -19,64 +21,95 @@ export default function ImageProWorkspace() {
     null
   );
   const [result, setResult] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTask, setCurrentTask] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Cropper States
+  const [cropping, setCropping] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const onCropComplete = useCallback((_: Area, pixels: Area) => {
+    setCroppedAreaPixels(pixels);
+  }, []);
+
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (f) {
-      if (image?.preview) URL.revokeObjectURL(image.preview);
       setImage({ file: f, preview: URL.createObjectURL(f) });
       setResult(null);
     }
+  };
+
+  const applyCrop = async () => {
+    if (!image || !croppedAreaPixels) return;
+    const img = new window.Image();
+    img.src = image.preview;
+    await new Promise((res) => (img.onload = res));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = croppedAreaPixels.width;
+    canvas.height = croppedAreaPixels.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.drawImage(
+      img,
+      croppedAreaPixels.x,
+      croppedAreaPixels.y,
+      croppedAreaPixels.width,
+      croppedAreaPixels.height,
+      0,
+      0,
+      croppedAreaPixels.width,
+      croppedAreaPixels.height
+    );
+
+    const croppedUrl = canvas.toDataURL("image/png");
+    setImage({ ...image, preview: croppedUrl });
+    setCropping(false);
   };
 
   const onRemoveBG = async () => {
     if (!image) return;
     setIsProcessing(true);
     try {
-      const blob = await processBackgroundRemoval(image.file, (task, p) => {
-        setCurrentTask(task);
-        setProgress(p);
-      });
-      setResult(URL.createObjectURL(blob));
-    } catch (e) {
-      console.error(e);
-      alert(
-        "AI Engine failed. Make sure model files are in /public/workers/imgly/"
+      const apiResult = await processBackgroundRemoval(
+        image.preview,
+        (task, p) => {
+          setCurrentTask(task);
+          setProgress(p);
+        }
       );
+      setResult(apiResult); // Result is the Base64 from API
+    } catch (e) {
+      alert("Processing failed. Check internet/API.");
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const reset = () => {
-    if (result) URL.revokeObjectURL(result);
-    setImage(null);
-    setResult(null);
-    setIsProcessing(false);
-  };
-
   if (!mounted) return null;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pb-32">
-      <div className="text-center mb-10">
-        <h1 className="text-4xl font-black italic uppercase tracking-tighter text-black dark:text-white mb-2">
-          Image<span className="text-accent">Pro</span>
+    <div className="max-w-2xl mx-auto px-4 pb-32 w-full">
+      <header className="text-center mb-10">
+        <h1 className="text-4xl font-black italic uppercase tracking-tighter mb-2">
+          Image<span className="text-primary">Pro</span>
         </h1>
-        <p className="text-[10px] font-bold text-primary tracking-[0.3em] uppercase opacity-80">
-          Neural Background Removal • Offline & Private
-        </p>
-      </div>
+        <span className="px-3 py-1 bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase rounded-full">
+          ⚡ AI Background Remover
+        </span>
+      </header>
 
       {!image ? (
-        <div className="relative border-2 border-dashed border-primary/20 rounded-[2.5rem] p-16 text-center bg-primary/5 hover:bg-primary/10 transition-all group overflow-hidden">
+        <div className="relative border-2 border-dashed border-border rounded-[2.5rem] p-16 text-center bg-foreground/[0.02] hover:bg-foreground/[0.05] transition-all group">
           <input
             type="file"
             accept="image/*"
@@ -84,14 +117,11 @@ export default function ImageProWorkspace() {
             className="absolute inset-0 opacity-0 cursor-pointer z-10"
           />
           <ImageIcon
-            className="mx-auto mb-4 text-primary group-hover:scale-110 transition-transform duration-500"
+            className="mx-auto mb-4 opacity-20 group-hover:scale-110 transition-all"
             size={48}
           />
-          <p className="font-black text-black dark:text-white uppercase italic tracking-tight">
-            Drop image to start AI engine
-          </p>
-          <p className="text-[10px] text-foreground/40 mt-2 uppercase font-bold tracking-widest">
-            Supports JPG, PNG, WEBP
+          <p className="font-black uppercase italic tracking-tight">
+            Upload Image
           </p>
         </div>
       ) : (
@@ -100,8 +130,7 @@ export default function ImageProWorkspace() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          <div className="relative aspect-square rounded-[2.5rem] overflow-hidden bg-card border border-border shadow-2xl flex items-center justify-center p-4">
-            {/* Checkerboard background for transparency preview */}
+          <div className="relative aspect-square rounded-[2.5rem] overflow-hidden bg-card border border-border flex items-center justify-center p-4">
             {result && (
               <div
                 className="absolute inset-0 opacity-10"
@@ -113,18 +142,20 @@ export default function ImageProWorkspace() {
               />
             )}
 
-            <Image
-              height={50}
-              width={50}
-              src={result || image.preview}
-              className="relative z-10 max-w-full max-h-full object-contain rounded-xl"
-              alt="Preview"
-            />
+            <div className="relative w-full h-full">
+              <Image
+                src={result || image.preview}
+                fill
+                className="object-contain z-10"
+                alt="Preview"
+                unoptimized
+              />
+            </div>
 
             {isProcessing && (
               <div className="absolute inset-0 z-20 bg-background/80 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center">
                 <Loader2 className="animate-spin text-primary mb-4" size={48} />
-                <p className="font-black text-black dark:text-white italic uppercase tracking-widest text-sm mb-1">
+                <p className="font-black uppercase text-sm mb-1">
                   {currentTask}
                 </p>
                 <p className="text-4xl font-black text-primary">{progress}%</p>
@@ -132,48 +163,85 @@ export default function ImageProWorkspace() {
             )}
 
             <button
-              onClick={reset}
-              className="absolute top-6 right-6 z-30 p-2 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors"
+              onClick={() => setImage(null)}
+              className="absolute top-6 right-6 z-30 p-2 bg-foreground/10 rounded-full hover:bg-red-500 hover:text-white transition-all"
             >
               <X size={20} />
             </button>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             {!result ? (
-              <button
-                onClick={onRemoveBG}
-                disabled={isProcessing}
-                className="flex-1 py-5 bg-primary text-black font-black rounded-2xl shadow-xl shadow-primary/20 active:scale-95 disabled:opacity-30 transition-all flex items-center justify-center gap-3"
-              >
-                <Sparkles size={20} fill="black" />
-                <span className="uppercase italic tracking-tighter">
-                  Remove Background
-                </span>
-              </button>
-            ) : (
               <>
                 <button
-                  onClick={() => setResult(null)}
-                  className="p-5 bg-white/5 border border-border text-black dark:text-white rounded-2xl hover:bg-white/10 transition-all"
+                  onClick={() => setCropping(true)}
+                  className="flex-1 py-4 bg-foreground/[0.05] border border-border font-black rounded-2xl flex items-center justify-center gap-2"
                 >
-                  <RefreshCcw size={20} />
+                  <CropIcon size={18} /> CROP
                 </button>
-                <a
-                  href={result}
-                  download="quicksuite-removed.png"
-                  className="flex-1 py-5 bg-primary text-black font-black rounded-2xl shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-3"
+                <button
+                  onClick={onRemoveBG}
+                  disabled={isProcessing}
+                  className="flex-[2] py-4 bg-primary text-black font-black rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-3"
                 >
-                  <Download size={20} />
-                  <span className="uppercase italic tracking-tighter font-black">
-                    Download PNG
-                  </span>
-                </a>
+                  <Sparkles size={18} fill="black" /> REMOVE BACKGROUND
+                </button>
               </>
+            ) : (
+              <a
+                href={result}
+                download="removed-bg.png"
+                className="w-full py-5 bg-primary text-black font-black rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-3"
+              >
+                <Download size={20} /> DOWNLOAD PNG
+              </a>
             )}
           </div>
         </motion.div>
       )}
+
+      {/* Cropper Modal */}
+      <AnimatePresence>
+        {cropping && image && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-background/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+          >
+            <div className="bg-card border border-border p-6 rounded-[2.5rem] w-full max-w-lg space-y-6">
+              <h3 className="font-black uppercase italic italic">
+                Adjust Focus
+              </h3>
+              <div className="relative w-full h-80 bg-black rounded-2xl overflow-hidden">
+                <Cropper
+                  image={image.preview}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={onCropComplete}
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setCropping(false)}
+                  className="flex-1 py-3 bg-foreground/5 rounded-xl font-bold"
+                >
+                  CANCEL
+                </button>
+                <button
+                  onClick={applyCrop}
+                  className="flex-1 py-3 bg-primary text-black rounded-xl font-black"
+                >
+                  APPLY CROP
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

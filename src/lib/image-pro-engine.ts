@@ -1,40 +1,52 @@
-import { removeBackground, Config } from "@imgly/background-removal";
+import axios from "axios";
 
 export async function processBackgroundRemoval(
-  imageSource: ImageData | ArrayBuffer | Uint8Array | Blob | URL | string,
+  imagePreview: string,
   onProgress?: (task: string, progress: number) => void
-): Promise<Blob> {
-  // Use a clean relative path for the public folder
-  const config: Config = {
-    // Ensuring the path points to where your models are copied
-    publicPath: `${window.location.origin}/workers/imgly/`,
+): Promise<string> {
+  let baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
 
-    // REMOVED "no-cors" - it blocks the reading of the binary model files
-    fetchArgs: {
-      mode: "same-origin",
-    },
+  // Force absolute URL
+  if (baseUrl && !baseUrl.startsWith("http")) {
+    baseUrl = `https://${baseUrl}`;
+  }
 
-    output: {
-      format: "image/png",
-      quality: 0.8,
-    },
-
-    progress: (task: string, current: number, total: number) => {
-      if (onProgress) {
-        // Task titles are often technical (e.g., 'sd' or 'isnet'), let's clean them
-        const friendlyTask = task.includes("model")
-          ? "Loading AI Model"
-          : "Processing Image";
-        const percentage = Math.round((current / total) * 100) || 0;
-        onProgress(friendlyTask, percentage);
-      }
-    },
-  };
+  const cleanBaseUrl = baseUrl.replace(/\/$/, "");
+  const finalUrl = `${cleanBaseUrl}/v1/ai/remove-bg`;
 
   try {
-    return await removeBackground(imageSource, config);
-  } catch (error) {
-    console.error("AI Background Removal Error:", error);
+    const res = await fetch(imagePreview);
+    const blob = await res.blob();
+
+    const base64 = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
+
+    if (onProgress) onProgress("AI Engine Removing Background...", 60);
+
+    // Optimized Axios call with timeout and specific headers
+    const response = await axios.post(
+      finalUrl,
+      { imageBase64: base64.replace(/^data:image\/\w+;base64,/, "") },
+      {
+        headers: { "Content-Type": "application/json" },
+        timeout: 30000, // 30 seconds for AI processing
+      }
+    );
+
+    return response.data.image;
+  } catch (error: any) {
+    if (error.code === "ECONNABORTED") {
+      throw new Error("Request timed out. The AI server took too long.");
+    }
+    if (!error.response) {
+      // This is usually where "Network Error" lives (CORS or Server Down)
+      throw new Error(
+        "Network Error: Check if the API server is running and CORS is enabled."
+      );
+    }
     throw error;
   }
 }

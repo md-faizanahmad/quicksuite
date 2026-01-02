@@ -75,13 +75,13 @@ export default function HomePage() {
           href="/tools/pdf-merge"
           accent="border-primary/20"
         />
-        <ToolCard
+        {/* <ToolCard
           title="QuickImage Pro"
           desc="Local AI background removal. No data ever leaves your device."
           icon={<ImageIcon size={24} />}
           href="/tools/image-pro"
           accent="border-accent/20"
-        />
+        /> */}
         <ToolCard
           title="Image to PDF"
           desc="Convert JPG/PNG to high-quality PDF documents instantly."

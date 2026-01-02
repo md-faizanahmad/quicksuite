@@ -13,7 +13,7 @@ export default function Header() {
     { name: "Home", href: "/" },
     { name: "PDF Merge", href: "/tools/pdf-merge" },
     { name: "Quick Reduce", href: "/tools/quick-reduce" },
-    { name: "Image Pro", href: "/tools/image-pro" },
+    // { name: "Image Pro", href: "/tools/image-pro" },
   ];
 
   return (

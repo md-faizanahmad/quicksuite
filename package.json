@@ -4,22 +4,24 @@
   "private": true,
   "scripts": {
     "dev": "npm run copy-worker && next dev",
-    "build": "npm run copy-worker && next build",
+    "build": "npm run copy-worker && next build --webpack",
     "start": "next start",
     "lint": "next lint",
     "copy-worker": "copyfiles -f node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/workers/ && copyfiles -f node_modules/@imgly/background-removal/dist/*.wasm node_modules/@imgly/background-removal/dist/*.json public/workers/imgly/ && copyfiles -f node_modules/@imgly/background-removal/dist/models/*.onnx public/workers/imgly/models/"
   },
   "dependencies": {
+    "@ducanh2912/next-pwa": "^10.2.9",
     "@imgly/background-removal": "^1.7.0",
+    "axios": "^1.13.2",
     "framer-motion": "^12.23.26",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
     "next-themes": "^0.4.6",
-    "onnxruntime-web": "^1.21.0-dev.20250206-d981b153d3",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "4.2.67",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-easy-crop": "^5.5.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
