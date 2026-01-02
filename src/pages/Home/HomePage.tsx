@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import {
   FileText,
-  ImageIcon,
   Shrink,
   Zap,
   FileOutput,
@@ -93,7 +92,7 @@ export default function HomePage() {
           title="QuickOCR"
           desc="Extract text from images locally using on-device machine learning."
           icon={<ScanText size={24} />}
-          href="/tools/ocr"
+          href="/tools/quick-ocr"
           accent="border-accent/20"
         />
       </section>

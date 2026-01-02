@@ -14,6 +14,7 @@ export default function Header() {
     { name: "PDF Merge", href: "/tools/pdf-merge" },
     { name: "Quick Reduce", href: "/tools/quick-reduce" },
     { name: "Image To Pdf", href: "/tools/image-to-pdf" },
+    { name: "Text Extract", href: "/tools/quick-ocr" },
     // { name: "Image Pro", href: "/tools/image-pro" },
   ];
 
