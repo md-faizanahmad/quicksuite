@@ -2,13 +2,14 @@
 
 import { motion } from "framer-motion";
 import {
-  ShieldCheck,
   Cpu,
   WifiOff,
   HardDrive,
   Zap,
   FileJson,
   Lock,
+  Languages,
+  EyeOff,
 } from "lucide-react";
 
 export default function HowItWorks() {
@@ -24,14 +25,14 @@ export default function HowItWorks() {
       desc: "We use WebAssembly to run industrial-grade C++ logic directly in your browser RAM. Your CPU does the work, not a remote server.",
     },
     {
-      icon: <ShieldCheck className="text-primary" size={24} />,
-      title: "Privacy-First Architecture",
-      desc: "Zero file uploads. Your data never leaves your device. Files are processed locally and purged immediately when the tab is closed.",
+      icon: <Languages className="text-primary" size={24} />,
+      title: "Neural OCR Engine",
+      desc: "Our text extraction uses a local neural network to read images and PDFs. AI-powered character recognition without sending pixels to the cloud.",
     },
     {
       icon: <HardDrive className="text-primary" size={24} />,
       title: "Installable Desktop App",
-      desc: "As a Progressive Web App (PWA), you can install QuickSuite on Windows or Mobile for instant access to tools even without internet.",
+      desc: "As a Progressive Web App (PWA), you can install QuickSuite on Windows, Mac, or Mobile for instant access to tools even without internet.",
     },
   ];
 
@@ -47,15 +48,15 @@ export default function HowItWorks() {
           <Lock size={12} fill="currentColor" /> Secure Local Processing
         </motion.div>
 
-        <h1 className="text-5xl md:text-7xl font-black italic uppercase mb-8 tracking-tighter  leading-[0.9]">
+        <h1 className="text-5xl md:text-7xl font-black italic uppercase mb-8 tracking-tighter leading-[0.9]">
           How we <span className="text-primary">Protect & Process</span> Your
           Data.
         </h1>
 
-        <p className="text-xl /60 max-w-3xl font-medium leading-relaxed">
+        <p className="text-xl opacity-70 max-w-3xl font-medium leading-relaxed">
           Standard tools upload your PDFs and Images to their servers, exposing
           your identity. QuickSuite uses **Edge Computing** to convert, reduce,
-          and merge files inside your browser.
+          extract, and merge files inside your browser.
         </p>
       </header>
 
@@ -68,39 +69,54 @@ export default function HowItWorks() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.1 }}
-            className="group cursor-pointer p-8 rounded-[2.5rem] bg-card border border-border hover:border-primary/30 transition-all duration-500"
+            className="group cursor-default p-8 rounded-[2.5rem] bg-card border border-border hover:border-primary/30 transition-all duration-500"
           >
             <div className="p-4 rounded-2xl bg-primary/10 w-fit mb-6 group-hover:scale-110 transition-transform duration-500">
               {step.icon}
             </div>
-            <h3 className="text-2xl font-black uppercase italic mb-3  tracking-tight">
+            <h3 className="text-2xl font-black uppercase italic mb-3 tracking-tight">
               {step.title}
             </h3>
-            <p className="/50 font-bold text-sm leading-relaxed">{step.desc}</p>
+            <p className="opacity-50 font-bold text-sm leading-relaxed">
+              {step.desc}
+            </p>
           </motion.article>
         ))}
       </section>
 
-      {/* Detailed SEO Content Section */}
-
-      <section className="bg-black/5 rounded-[3rem] p-10 md:p-16 border border-border">
+      {/* Detailed Tech Section */}
+      <section className="bg-foreground/3 rounded-[3rem] p-10 md:p-16 border border-border">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-3xl font-black uppercase italic  mb-6 tracking-tighter">
-              How we <span className="text-primary">Reduce & Convert</span>
+            <h2 className="text-3xl font-black uppercase italic mb-6 tracking-tighter">
+              The <span className="text-primary">Engine</span> Details
             </h2>
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div className="flex gap-4">
                 <div className="mt-1">
                   <Zap className="text-primary" size={20} />
                 </div>
                 <div>
-                  <h4 className="font-black  uppercase text-sm italic">
+                  <h4 className="font-black uppercase text-sm italic">
                     Smart Rasterization
                   </h4>
-                  <p className="text-xs font-bold /40">
+                  <p className="text-xs font-bold opacity-40 mt-1">
                     Our reduction engine turns PDF vectors into optimized pixels
                     to guarantee size targets like 25KB or 50KB.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="mt-1">
+                  <EyeOff className="text-primary" size={20} />
+                </div>
+                <div>
+                  <h4 className="font-black uppercase text-sm italic">
+                    Neural OCR
+                  </h4>
+                  <p className="text-xs font-bold opacity-40 mt-1">
+                    Extract text from scanned receipts and IDs using Tesseract
+                    WASM. No image data is ever cached or sent to a third party.
                   </p>
                 </div>
               </div>
@@ -109,23 +125,24 @@ export default function HowItWorks() {
                   <FileJson className="text-primary" size={20} />
                 </div>
                 <div>
-                  <h4 className="font-black  uppercase text-sm italic">
-                    Lossless Conversion
+                  <h4 className="font-black uppercase text-sm italic">
+                    In-Memory Structuring
                   </h4>
-                  <p className="text-xs font-bold /40">
-                    Image conversion (HEIC/PNG to JPG) uses the browser native
-                    Canvas API for maximum color accuracy.
+                  <p className="text-xs font-bold opacity-40 mt-1">
+                    Files are held as temporary Blobs in RAM. Once you save or
+                    close the tab, the memory is wiped by the browser garbage
+                    collector.
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="p-8 rounded-4xl bg-primary ">
+          <div className="p-8 rounded-4xl bg-primary text-background">
             <h3 className="text-xl font-black uppercase italic mb-4">
               Why use local tools?
             </h3>
-            <ul className="space-y-4 font-bold text-sm">
+            <ul className="space-y-4 font-bold text-sm italic tracking-tight">
               <li className="flex items-center gap-3">
                 ✓ No subscription or daily limits
               </li>
@@ -152,19 +169,19 @@ export default function HowItWorks() {
             "@type": "HowTo",
             name: "How to process files offline with QuickSuite",
             description:
-              "Learn how to reduce PDF size and remove backgrounds locally in your browser.",
+              "Learn how to reduce PDF size, extract text (OCR), and remove backgrounds locally in your browser.",
             step: [
               {
                 "@type": "HowToStep",
-                text: "Upload your file to the local staging area.",
+                text: "Select your file (PDF, Image) for local staging.",
               },
               {
                 "@type": "HowToStep",
-                text: "Set your target size (e.g., 25KB) or output format.",
+                text: "Configure parameters (Target size, OCR language, or Merge order).",
               },
               {
                 "@type": "HowToStep",
-                text: "Download the processed file directly from your browser memory.",
+                text: "Download the resulting file directly from your device memory.",
               },
             ],
           }),

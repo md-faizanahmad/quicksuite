@@ -53,9 +53,8 @@ export default function Footer() {
                   <span>QuickInvoice (Invoice)</span>
                 </a>
               </li>
-              <li>
-                <ButtonFooter />
-              </li>
+
+              <ButtonFooter />
             </ul>
           </div>
 

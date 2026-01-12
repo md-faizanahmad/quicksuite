@@ -117,9 +117,7 @@ export default function MergeWorkspace() {
         />
         <div className="border-2 border-dashed border-primary/20 rounded-3xl p-10 text-center bg-primary/5 hover:border-primary/50 transition-all">
           <Plus className="mx-auto mb-2 text-primary" size={28} />
-          <p className="font-bold text-sm dark:text-white light:text-black">
-            STAGE DOCUMENTS
-          </p>
+          <p className="font-bold text-sm ">STAGE DOCUMENTS</p>
           <p className="text-[10px] text-foreground/40 uppercase tracking-widest">
             Local Privacy Guaranteed
           </p>
@@ -145,12 +143,8 @@ export default function MergeWorkspace() {
                 size={20}
               />
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm truncate dark:text-white light:text-black">
-                  {item.name}
-                </p>
-                <p className="text-[10px] font-mono text-foreground/30">
-                  {item.size}
-                </p>
+                <p className="font-bold text-sm truncate ">{item.name}</p>
+                <p className="text-[10px] font-mono ">{item.size}</p>
               </div>
               <button
                 onClick={() =>
