@@ -8,7 +8,7 @@ export default function ToolCard({ title, desc, icon, href }: ToolCardProps) {
   return (
     <Link
       href={href}
-      className="group flex h-full min-h-[200px] flex-col rounded-lg border border-border bg-card p-5 transition-colors duration-200 hover:border-primary/50 hover:bg-foreground/[0.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-6"
+      className="group flex h-full min-h-50 flex-col rounded-lg border border-border bg-card p-5 transition-colors duration-200 hover:border-primary/50 hover:bg-foreground/2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-6"
     >
       {/* Icon and action */}
       <div className="mb-6 flex items-start justify-between">
