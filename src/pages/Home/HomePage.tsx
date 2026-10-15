@@ -1,11 +1,4 @@
-import {
-  FileText,
-  Shrink,
-  Zap,
-  FileOutput,
-  ScanText,
-  Info,
-} from "lucide-react";
+import { FileText, Shrink, FileOutput, ScanText } from "lucide-react";
 import ToolCard from "@/components/ToolCard";
 import Link from "next/link";
 
@@ -13,35 +6,55 @@ export default function HomePage() {
   return (
     <main className="pt-32 pb-20 px-6 min-h-screen flex flex-col items-center">
       {/* Hero Section */}
-      <section className="max-w-5xl mx-auto text-center mb-24 ">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-[0.2em] mb-8">
-          <Zap size={12} fill="currentColor" /> 100% Client-Side Processing
+      <section className="relative mx-auto mb-24 max-w-5xl px-4  text-center ">
+        {/* Eyebrow */}
+        <div className="mb-8 inline-flex items-center gap-3 border-y border-border py-3">
+          <span className="h-2 w-2 rounded-full bg-primary" />
+          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground/65">
+            100% Local Processing
+          </span>
+          <span className="h-4 w-px bg-border" />
+          <span className="text-[11px] font-medium text-primary">
+            No cloud uploads
+          </span>
         </div>
 
-        <h1 className="text-6xl md:text-8xl font-black mb-8 tracking-tighter leading-[0.85] text-foreground">
-          TOOLS THAT <br />
-          <span className="text-primary italic">RESPECT DATA.</span>
+        {/* Heading */}
+        <h1 className="mb-7 text-6xl font-bold leading-[0.95] tracking-[-0.055em] text-foreground md:text-8xl">
+          Tools that
+          <br />
+          <span className="text-primary">respect your privacy.</span>
         </h1>
 
-        <p className="text-foreground/60 text-lg md:text-xl max-w-2xl mx-auto mb-12 font-medium">
-          Stop uploading sensitive files to random servers. QuickSuite runs
-          industrial-grade engines directly in your browser.
+        {/* Description */}
+        <p className="mx-auto mb-10 max-w-2xl text-base leading-7 text-foreground/65 sm:text-lg sm:leading-8">
+          Merge PDFs, compress files, convert images, and extract text.
+          Everything runs directly in your browser, so your files stay on your
+          device.
         </p>
 
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
+        {/* Actions */}
+        <div className="flex flex-col justify-center gap-3 sm:flex-row">
           <Link
             href="#tools"
-            className="px-10 py-4 bg-primary text-black font-black uppercase italic tracking-tighter rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+            className="inline-flex min-h-12 items-center justify-center gap-3 rounded-md bg-primary px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
           >
-            Explore Tools
+            Explore tools
+            <span aria-hidden="true">→</span>
           </Link>
+
           <Link
             href="/how-it-works"
-            className="px-10 py-4 bg-foreground/5 border border-border font-black uppercase italic tracking-tighter rounded-2xl hover:bg-foreground/10 transition-all flex items-center justify-center gap-2"
+            className="inline-flex min-h-12 items-center justify-center rounded-md border border-border bg-transparent px-7 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
           >
-            <Info size={18} /> How it works
+            How it works
           </Link>
         </div>
+
+        {/* Trust note */}
+        <p className="mt-7 text-xs leading-5 text-foreground/45">
+          Your files are processed locally. Nothing is uploaded to our servers.
+        </p>
       </section>
 
       {/* Grid Section */}
