@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
+
 import { validatePDFSelection } from "@/lib/validation";
 import { mergePDFs } from "@/lib/pdf-engine";
 
@@ -19,7 +20,7 @@ export default function usePdfMerge() {
   const [status, setStatus] = useState<MergeStatus>("idle");
   const [mergedUrl, setMergedUrl] = useState<string | null>(null);
 
-  // Release the generated PDF URL when it changes or the hook unmounts.
+  // Keep the download URL alive until the success dialog is dismissed.
   useEffect(() => {
     if (!mergedUrl) return;
 
@@ -29,6 +30,7 @@ export default function usePdfMerge() {
   }, [mergedUrl]);
 
   const resetWorkspace = () => {
+    setFiles([]);
     setMergedUrl(null);
     setStatus("idle");
   };
@@ -40,8 +42,6 @@ export default function usePdfMerge() {
     if (!selectedFiles) return;
 
     const incoming = Array.from(selectedFiles);
-
-    // Allow selecting the same file again after a previous selection.
     input.value = "";
 
     const error = validatePDFSelection(files.length, incoming);
@@ -49,6 +49,13 @@ export default function usePdfMerge() {
     if (error) {
       alert(error);
       return;
+    }
+
+    // If a previous merge completed, dismiss its result state
+    // without removing the files being uploaded now.
+    if (status === "completed") {
+      setMergedUrl(null);
+      setStatus("idle");
     }
 
     const newEntries: QueuedFile[] = incoming.map((file) => ({
@@ -59,24 +66,35 @@ export default function usePdfMerge() {
     }));
 
     setFiles((previous) => [...previous, ...newEntries]);
-
-    if (status === "completed") {
-      resetWorkspace();
-    }
   };
 
   const handleMerge = async () => {
+    if (files.length < 2 || status === "processing") return;
+
     setStatus("processing");
 
     try {
       const blob = await mergePDFs(files.map((file) => file.file));
       const url = URL.createObjectURL(blob);
 
+      // Initiate the browser download.
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "merged.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      // Keep the URL alive while the success dialog is open.
       setMergedUrl(url);
+
+      // Clear the queue and show the success state.
+      setFiles([]);
       setStatus("completed");
     } catch (error) {
       console.error("Merge Logic Error:", error);
       setStatus("idle");
+      alert("Unable to merge these PDFs. Please try again.");
     }
   };
 

@@ -2,15 +2,9 @@
 
 import usePdfMerge from "@/hooks/usePdfMerge";
 import { motion } from "framer-motion";
-import {
-  CheckCircle2,
-  Download,
-  FileText,
-  Loader2,
-  RefreshCcw,
-  Plus,
-} from "lucide-react";
+import { FileText, Loader2, Plus } from "lucide-react";
 import MergeFileList from "./MergeFileList";
+import MergeSuccessModal from "./MergeSuccessModal";
 
 export default function MergeWorkspace() {
   const {
@@ -24,39 +18,10 @@ export default function MergeWorkspace() {
     resetWorkspace,
   } = usePdfMerge();
 
+  const isSuccessModalOpen = status === "completed" && mergedUrl !== null;
+
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6">
-      {/* Success Banner */}
-      {status === "completed" && mergedUrl && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-4 rounded-xl border border-primary/30 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <div className="flex items-start gap-3">
-            <CheckCircle2 size={22} className="mt-0.5 shrink-0 text-primary" />
-
-            <div>
-              <h3 className="font-semibold text-foreground">
-                PDFs merged successfully
-              </h3>
-              <p className="mt-1 text-sm text-foreground/60">
-                Your merged document is ready to download.
-              </p>
-            </div>
-          </div>
-
-          <a
-            href={mergedUrl}
-            download="quicksuite-merged.pdf"
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent"
-          >
-            <Download size={16} />
-            Download PDF
-          </a>
-        </motion.div>
-      )}
-
       {/* Upload Area */}
       <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
         <div className="mb-5">
@@ -75,7 +40,7 @@ export default function MergeWorkspace() {
             <Plus size={24} />
           </span>
 
-          <span className="font-medium text-foreground">Upload PDF files</span>
+          <span className="font-medium text-foreground">Add PDF files</span>
 
           <span className="mt-1 text-sm text-foreground/55">
             Click to browse your device
@@ -90,6 +55,7 @@ export default function MergeWorkspace() {
             multiple
             accept=".pdf,application/pdf"
             onChange={handleUpload}
+            disabled={status === "processing"}
             className="sr-only"
           />
         </label>
@@ -114,7 +80,6 @@ export default function MergeWorkspace() {
             disabled={status === "processing"}
           />
 
-          {/* Centered Merge Button */}
           <div className="flex flex-col items-center gap-3 py-2">
             <button
               type="button"
@@ -131,11 +96,6 @@ export default function MergeWorkspace() {
                   <Loader2 size={17} className="animate-spin" />
                   Merging PDFs...
                 </>
-              ) : status === "completed" ? (
-                <>
-                  <CheckCircle2 size={17} />
-                  Merge complete
-                </>
               ) : (
                 <>
                   <FileText size={17} />
@@ -149,20 +109,12 @@ export default function MergeWorkspace() {
                 ? "Add at least one more PDF to start merging."
                 : `${files.length} PDFs will be combined in the order shown above.`}
             </p>
-
-            {status === "completed" && (
-              <button
-                type="button"
-                onClick={resetWorkspace}
-                className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-foreground/60 transition-colors hover:bg-card hover:text-foreground"
-              >
-                <RefreshCcw size={15} />
-                Prepare another merge
-              </button>
-            )}
           </div>
         </motion.section>
       )}
+
+      {/* Success Modal */}
+      <MergeSuccessModal isOpen={isSuccessModalOpen} onClose={resetWorkspace} />
     </div>
   );
 }
