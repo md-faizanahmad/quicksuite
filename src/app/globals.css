@@ -1,28 +1,36 @@
 @import "tailwindcss";
 
+@import "tailwindcss";
+
 @theme {
+  /* Brand */
+  --color-primary: #c74634;
+  --color-accent: #a93628;
+
   /* Default Dark Mode */
-  --color-background: oklch(14% 0.01 257);
-  --color-foreground: #ffffff;
-  --color-primary: #38bdf8;
-  --color-accent: #a855f7;
-  --color-card: oklch(18% 0.02 257);
-  --color-border: oklch(25% 0.02 257);
+  --color-background: #191817;
+  --color-foreground: #f4f1ed;
+  --color-card: #23211f;
+  --color-border: #393531;
 }
 
-/* Light Mode Overrides */
+/* Light Mode */
 .light {
-  --color-background: oklch(99% 0 0);
-  --color-foreground: #000000;
-  --color-card: oklch(96% 0.01 257);
-  --color-border: oklch(90% 0.01 257);
+  --color-background: #f7f6f3;
+  --color-foreground: #262421;
+  --color-primary: #b93829;
+  --color-accent: #9e3024;
+  --color-card: #ffffff;
+  --color-border: #e5e1db;
 }
 
 @layer base {
   * {
     /* Fixed the error by using standard border-color variable */
     border-color: var(--color-border);
-    transition: background-color 0.3s ease, border-color 0.3s ease,
+    transition:
+      background-color 0.3s ease,
+      border-color 0.3s ease,
       color 0.3s ease;
   }
 
@@ -44,7 +52,8 @@
     position: fixed;
     inset: 0;
     z-index: -1;
-    background: radial-gradient(
+    background:
+      radial-gradient(
         circle at 15% 15%,
         rgba(56, 189, 248, 0.04),
         transparent 35%
