@@ -146,7 +146,7 @@ export default function MobileNavigation({
                   Your files. Your device.
                 </span>
                 <span className="text-xs font-bold text-primary">
-                  QuickSuite
+                  QuickTool
                 </span>
               </div>
             </div>
