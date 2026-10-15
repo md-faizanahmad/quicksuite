@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import {
   FileText,
   Shrink,
@@ -17,22 +14,14 @@ export default function HomePage() {
     <main className="pt-32 pb-20 px-6 min-h-screen flex flex-col items-center">
       {/* Hero Section */}
       <section className="max-w-5xl mx-auto text-center mb-24 ">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-[0.2em] mb-8"
-        >
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-[0.2em] mb-8">
           <Zap size={12} fill="currentColor" /> 100% Client-Side Processing
-        </motion.div>
+        </div>
 
-        <motion.h1
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-6xl md:text-8xl font-black mb-8 tracking-tighter leading-[0.85] text-foreground"
-        >
+        <h1 className="text-6xl md:text-8xl font-black mb-8 tracking-tighter leading-[0.85] text-foreground">
           TOOLS THAT <br />
           <span className="text-primary italic">RESPECT DATA.</span>
-        </motion.h1>
+        </h1>
 
         <p className="text-foreground/60 text-lg md:text-xl max-w-2xl mx-auto mb-12 font-medium">
           Stop uploading sensitive files to random servers. QuickSuite runs
@@ -74,13 +63,7 @@ export default function HomePage() {
           href="/tools/pdf-merge"
           accent="border-primary/20"
         />
-        {/* <ToolCard
-          title="QuickImage Pro"
-          desc="Local AI background removal. No data ever leaves your device."
-          icon={<ImageIcon size={24} />}
-          href="/tools/image-pro"
-          accent="border-accent/20"
-        /> */}
+
         <ToolCard
           title="Image to PDF"
           desc="Convert JPG/PNG to high-quality PDF documents instantly."

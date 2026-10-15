@@ -1,13 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Zap, Menu, X } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import MobileNavigation from "./MobileNavigation";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -15,71 +18,111 @@ export default function Header() {
     { name: "Quick Reduce", href: "/tools/quick-reduce" },
     { name: "Image To Pdf", href: "/tools/image-to-pdf" },
     { name: "Text Extract", href: "/tools/quick-ocr" },
-    // { name: "Image Pro", href: "/tools/image-pro" },
   ];
 
+  const isActive = (href: string): boolean => {
+    if (!pathname) return false;
+
+    return href === "/"
+      ? pathname === "/"
+      : pathname === href || pathname.startsWith(`${href}/`);
+  };
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-100 border-b border-foreground/5 bg-background/70 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        {/* Brand */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="p-1.5 rounded-lg bg-primary text-black transition-transform group-hover:rotate-12">
-            <Zap size={18} fill="currentColor" />
+    <>
+      <nav className="fixed inset-x-0 top-0 z-100 border-b border-foreground/10 bg-background/85 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+          {/* Brand */}
+          <Link
+            href="/"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="group flex items-center gap-2.5"
+          >
+            <span className="  text-primary transition-transform duration-300 group-hover:rotate-12">
+              <Zap size={18} fill="currentColor" />
+            </span>
+
+            <span className="text-lg font-black uppercase  tracking-tighter">
+              Quick
+              <span className="text-primary italic tracking-widest">Suite</span>
+            </span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden items-center gap-1 md:flex">
+            {navLinks.map((link) => {
+              const active = isActive(link.href);
+
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`group relative rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider transition-colors duration-200 lg:px-4 lg:text-sm ${
+                    active
+                      ? "text-primary"
+                      : "text-foreground/60 hover:text-primary"
+                  }`}
+                >
+                  {link.name}
+
+                  <motion.span
+                    className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary"
+                    initial={false}
+                    animate={{ scaleX: active ? 1 : 0 }}
+                    transition={{ duration: 0.22, ease: "easeOut" }}
+                    style={{ transformOrigin: "center" }}
+                  />
+
+                  <span
+                    className={`pointer-events-none absolute inset-0 -z-10 rounded-lg bg-primary/10 transition-opacity duration-200 ${
+                      active
+                        ? "opacity-100"
+                        : "opacity-0 group-hover:opacity-100"
+                    }`}
+                  />
+                </Link>
+              );
+            })}
+
+            <div className="mx-3 h-5 w-px bg-foreground/10" />
+            <ThemeToggle />
           </div>
-          <span className="font-black text-lg tracking-tighter uppercase italic">
-            Quick<span className="text-primary">Suite</span>
-          </span>
-        </Link>
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              className="text-sm font-bold uppercase tracking-widest text-foreground/60 hover:text-primary transition-colors"
+          {/* Mobile Actions */}
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+
+            <button
+              type="button"
+              aria-label={
+                isMobileMenuOpen ? "Close navigation" : "Open navigation"
+              }
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-navigation"
+              onClick={() => setIsMobileMenuOpen((open) => !open)}
+              className="flex h-10 w-10 items-center justify-center  text-primary transition-colors  "
             >
-              {link.name}
-            </Link>
-          ))}
-          <div className="h-4 w-px bg-foreground/10" />
-          <ThemeToggle />
-        </div>
-
-        {/* Mobile Toggle */}
-        <div className="flex md:hidden items-center gap-4">
-          <ThemeToggle />
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 text-foreground/60"
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu Dropdown */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute top-16 left-0 right-0 border-b border-foreground/5 bg-background px-6 py-8 md:hidden flex flex-col gap-6 shadow-2xl"
-          >
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-2xl font-black uppercase tracking-tighter hover:text-primary transition-colors"
+              <motion.span
+                key={isMobileMenuOpen ? "close" : "menu"}
+                initial={{ opacity: 0, rotate: -45, scale: 0.8 }}
+                animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                transition={{ duration: 0.15 }}
+                className="flex"
               >
-                {link.name}
-              </Link>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </nav>
+                {isMobileMenuOpen ? <X size={21} /> : <Menu size={21} />}
+              </motion.span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Separate Mobile Navigation Component */}
+      <MobileNavigation
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        navLinks={navLinks}
+      />
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { ToolCardProps } from "@/@types/toolCardType";
-import { motion } from "framer-motion";
 import { ArrowRight, Zap } from "lucide-react";
 import Link from "next/link";
 
@@ -19,8 +18,7 @@ export default function ToolCard({
 
   return (
     <Link href={href} className="group block h-full">
-      <motion.div
-        whileHover={{ y: -4, scale: 1.01 }}
+      <div
         className={`h-full p-6 rounded-4xl bg-card/80 backdrop-blur-3xl border border-border transition-all duration-300 ${shadowClass}`}
       >
         <div className="flex items-center justify-between mb-6">
@@ -55,7 +53,7 @@ export default function ToolCard({
             className="text-primary -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all"
           />
         </div>
-      </motion.div>
+      </div>
     </Link>
   );
 }
