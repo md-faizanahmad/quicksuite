@@ -1,41 +1,38 @@
-"use client";
-
 import MergeWorkspace from "@/features/pdf/MergeWorkspace";
-import { motion } from "framer-motion";
-import { Zap } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
+import MotionReveal from "@/components/ui/MotionReveal";
 
 export default function PdfMergePage() {
   return (
-    <main className="pt-32 pb-20 px-6 min-h-screen flex flex-col items-center">
-      <section className="max-w-4xl mx-auto text-center mb-12">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest mb-6 text-primary"
-        >
-          <Zap size={12} fill="currentColor" /> 100% Client-Side
-        </motion.div>
+    <main className="min-h-screen px-4 pb-20 pt-28 sm:px-6 sm:pt-32">
+      <section className="mx-auto mb-12 max-w-4xl text-center">
+        <MotionReveal>
+          <div className="mb-6 inline-flex items-center gap-2 border-y border-border py-2 text-xs font-medium text-foreground/65">
+            <ShieldCheck size={15} className="text-primary" />
+            <span>Private PDF processing</span>
+            <span className="mx-1 h-3 w-px bg-border" />
+            <span>No cloud uploads</span>
+          </div>
+        </MotionReveal>
 
-        <motion.h1
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-5xl md:text-7xl font-black tracking-tighter mb-6 leading-[0.9] uppercase"
-        >
-          QUICK<span className="text-primary italic">PDF MERGE.</span>
-        </motion.h1>
+        <MotionReveal delay={0.08}>
+          <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl md:text-6xl">
+            Merge PDF files
+            <span className="mt-1 block text-primary">
+              Simply and securely.
+            </span>
+          </h1>
+        </MotionReveal>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-foreground/60 max-w-xl mx-auto font-medium text-lg"
-        >
-          Reorder and combine your PDF documents in seconds. The processing
-          happens entirely in your browser.
-        </motion.p>
+        <MotionReveal delay={0.16}>
+          <p className="mx-auto max-w-xl text-base leading-7 text-foreground/65 sm:text-lg sm:leading-8">
+            Combine multiple PDF documents into one file. Reorder your pages and
+            prepare your final document directly in your browser.
+          </p>
+        </MotionReveal>
       </section>
 
-      <section className="w-full">
+      <section className="mx-auto w-full max-w-6xl">
         <MergeWorkspace />
       </section>
     </main>
