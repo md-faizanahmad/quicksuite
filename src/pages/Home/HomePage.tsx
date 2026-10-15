@@ -58,39 +58,61 @@ export default function HomePage() {
       </section>
 
       {/* Grid Section */}
+
       <section
         id="tools"
-        className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+        aria-label="Available document tools"
+        className="
+    mx-auto w-full max-w-6xl
+    flex gap-4 overflow-x-auto px-4 pb-4
+    snap-x snap-mandatory
+    [scrollbar-width:none]
+    [&::-webkit-scrollbar]:hidden
+    sm:px-0
+    sm:grid sm:grid-cols-2 sm:gap-5
+    sm:overflow-visible sm:pb-0
+    lg:grid-cols-3 lg:gap-6
+  "
       >
-        <ToolCard
-          title="QuickReduce"
-          desc="Shrink PDFs to 25KB/50KB using local rasterization. Perfect for gov portals."
-          icon={<Shrink size={24} />}
-          href="/tools/quick-reduce"
-          accent="border-primary/20"
-        />
-        <ToolCard
-          title="QuickMerge"
-          desc="Combine multiple PDFs into one document without a server."
-          icon={<FileText size={24} />}
-          href="/tools/pdf-merge"
-          accent="border-primary/20"
-        />
+        <div className="w-[82%] shrink-0 snap-start sm:w-auto sm:shrink">
+          <ToolCard
+            title="QuickReduce"
+            desc="Shrink PDFs to 25KB/50KB using local rasterization. Perfect for gov portals."
+            icon={<Shrink size={24} />}
+            href="/tools/quick-reduce"
+            accent="border-primary/20"
+          />
+        </div>
 
-        <ToolCard
-          title="Image to PDF"
-          desc="Convert JPG/PNG to high-quality PDF documents instantly."
-          icon={<FileOutput size={24} />}
-          href="/tools/image-to-pdf"
-          accent="border-primary/20"
-        />
-        <ToolCard
-          title="QuickOCR"
-          desc="Extract text from images locally using on-device machine learning."
-          icon={<ScanText size={24} />}
-          href="/tools/quick-ocr"
-          accent="border-accent/20"
-        />
+        <div className="w-[82%] shrink-0 snap-start sm:w-auto sm:shrink">
+          <ToolCard
+            title="QuickMerge"
+            desc="Combine multiple PDFs into one document without a server."
+            icon={<FileText size={24} />}
+            href="/tools/pdf-merge"
+            accent="border-primary/20"
+          />
+        </div>
+
+        <div className="w-[82%] shrink-0 snap-start sm:w-auto sm:shrink">
+          <ToolCard
+            title="Image to PDF"
+            desc="Convert JPG/PNG to high-quality PDF documents instantly."
+            icon={<FileOutput size={24} />}
+            href="/tools/image-to-pdf"
+            accent="border-primary/20"
+          />
+        </div>
+
+        <div className="w-[82%] shrink-0 snap-start sm:w-auto sm:shrink">
+          <ToolCard
+            title="QuickOCR"
+            desc="Extract text from images locally using on-device machine learning."
+            icon={<ScanText size={24} />}
+            href="/tools/quick-ocr"
+            accent="border-accent/20"
+          />
+        </div>
       </section>
     </main>
   );
