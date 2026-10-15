@@ -75,7 +75,7 @@ export default function Header() {
                   />
 
                   <span
-                    className={`pointer-events-none absolute inset-0 -z-10 rounded-lg bg-primary/10 transition-opacity duration-200 ${
+                    className={`pointer-events-none absolute inset-0 -z-10  transition-opacity duration-200 ${
                       active
                         ? "opacity-100"
                         : "opacity-0 group-hover:opacity-100"
