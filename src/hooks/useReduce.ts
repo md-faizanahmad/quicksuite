@@ -53,6 +53,15 @@ export default function useReduce() {
     setFile(selectedFile);
   };
 
+  const triggerDownload = (url: string, fileName: string) => {
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `reduced_${fileName}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const onReduce = async () => {
     if (!file) return;
 
@@ -70,12 +79,17 @@ export default function useReduce() {
 
       const finalSizeKB = Number((reducedBlob.size / 1024).toFixed(1));
 
-      setResult({
+      const nextResult = {
         blob: reducedBlob,
         url,
         finalSizeKB,
         savedPercent: Math.round(saved),
-      });
+      };
+
+      setResult(nextResult);
+
+      // Automatically download the completed file.
+      triggerDownload(url, file.name);
     } catch (err) {
       console.log(err);
       setError("Optimization failed. Try a slightly higher target size.");
@@ -86,14 +100,7 @@ export default function useReduce() {
 
   const downloadFile = () => {
     if (!result || !file) return;
-
-    const link = document.createElement("a");
-    link.href = result.url;
-    link.download = `reduced_${file.name}`;
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    triggerDownload(result.url, file.name);
   };
 
   const reset = () => {
