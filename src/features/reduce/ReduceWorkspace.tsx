@@ -1,7 +1,5 @@
 "use client";
 
-import React, { useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Loader2,
   Plus,
@@ -13,233 +11,259 @@ import {
   AlertTriangle,
   RefreshCcw,
 } from "lucide-react";
-import { runReduction } from "@/lib/reduce-engine";
-import * as pdfjs from "pdfjs-dist";
-
-// Standard CDN worker for Next.js compatibility
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
-
-interface ResultData {
-  blob: Blob;
-  url: string;
-  finalSizeKB: number;
-  savedPercent: number;
-}
+import { AnimatePresence, motion } from "framer-motion";
+import useReduce from "@/hooks/useReduce";
 
 export default function ReduceWorkspace() {
-  const [file, setFile] = useState<File | null>(null);
-  const [target, setTarget] = useState<number>(100);
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<ResultData | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
-
-    setError(null);
-    setResult(null);
-
-    if (selectedFile.type === "application/pdf") {
-      try {
-        const arrayBuffer = await selectedFile.arrayBuffer();
-        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-
-        if (pdf.numPages > 2) {
-          setError("QuickReduce currently supports only 1 or 2 page PDFs.");
-          return;
-        }
-      } catch (err) {
-        console.log(err);
-        setError("Failed to read PDF structure. The file might be corrupted.");
-        return;
-      }
-    }
-
-    setFile(selectedFile);
-  };
-
-  const onReduce = async () => {
-    if (!file) return;
-    setIsProcessing(true);
-    setError(null);
-
-    try {
-      const reducedBlob = await runReduction(file, target);
-      const url = URL.createObjectURL(reducedBlob);
-
-      const saved = Math.max(
-        0,
-        ((file.size - reducedBlob.size) / file.size) * 100
-      );
-      const finalSizeKB = Number((reducedBlob.size / 1024).toFixed(1));
-
-      setResult({
-        blob: reducedBlob,
-        url,
-        finalSizeKB,
-        savedPercent: Math.round(saved),
-      });
-    } catch (err) {
-      console.log(err);
-      setError("Optimization failed. Try a slightly higher target size.");
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const downloadFile = () => {
-    if (!result || !file) return;
-    const link = document.createElement("a");
-    link.href = result.url;
-    link.download = `reduced_${file.name}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const reset = () => {
-    if (result?.url) URL.revokeObjectURL(result.url);
-    setFile(null);
-    setResult(null);
-    setError(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+  const {
+    file,
+    target,
+    setTarget,
+    isProcessing,
+    error,
+    result,
+    fileInputRef,
+    handleFileUpload,
+    onReduce,
+    downloadFile,
+    reset,
+  } = useReduce();
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-10">
-      <AnimatePresence mode="wait">
-        {/* Error State */}
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-500"
-          >
-            <AlertTriangle size={20} className="shrink-0" />
-            <p className="text-xs font-bold uppercase tracking-tight">
-              {error}
+    <section className="mx-auto w-full max-w-4xl">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        {/* Workspace header */}
+        <div className="flex items-center justify-between border-b border-border px-5 py-4 sm:px-6">
+          <div>
+            <h2 className="text-base font-semibold text-foreground">
+              PDF compression
+            </h2>
+            <p className="mt-1 text-sm text-foreground/60">
+              Reduce file size directly in your browser.
             </p>
-            <button onClick={() => setError(null)} className="ml-auto">
-              <X size={16} />
+          </div>
+
+          {file && (
+            <button
+              type="button"
+              onClick={reset}
+              disabled={isProcessing}
+              className="inline-flex items-center gap-2 text-sm text-foreground/60 transition hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <RefreshCcw size={15} />
+              Reset
             </button>
-          </motion.div>
-        )}
+          )}
+        </div>
 
-        {/* Success State */}
-        {result && (
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="mb-6 p-8 rounded-[2.5rem] bg-sky-400/10 border border-sky-400/20 text-center"
-          >
-            <CheckCircle2 className="mx-auto text-sky-400 mb-4" size={40} />
-            <h3 className="text-3xl font-black text-sky-400 italic mb-1">
-              -{result.savedPercent}%
-            </h3>
-            <p className="text-[10px] uppercase font-black tracking-widest opacity-60 mb-6">
-              Reduced to {result.finalSizeKB} KB
-            </p>
+        <div className="space-y-6 p-5 sm:p-6">
+          {/* File upload */}
+          {!file ? (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex min-h-52 w-full flex-col items-center justify-center border border-dashed border-border px-5 py-8 text-center transition hover:border-primary/60 hover:bg-primary/[0.03]"
+            >
+              <span className="mb-4 flex size-12 items-center justify-center border border-border bg-background text-primary">
+                <Plus size={22} />
+              </span>
 
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={downloadFile}
-                className="flex items-center justify-center gap-2 w-full py-4 bg-sky-400 text-black rounded-2xl font-black uppercase tracking-tighter hover:brightness-110 transition-all shadow-lg shadow-sky-400/20"
-              >
-                <ArrowDownToLine size={18} /> Download Optimized File
-              </button>
-              <button
-                onClick={reset}
-                className="flex items-center justify-center gap-2 w-full py-3 text-sky-400/60 font-black text-[10px] uppercase tracking-widest hover:text-sky-400 transition-colors"
-              >
-                <RefreshCcw size={14} /> Start Fresh
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <span className="text-base font-semibold text-foreground">
+                Select a PDF or image
+              </span>
 
-      {/* Upload & Controls */}
-      {!result && (
-        <div className="space-y-6">
-          <div className="relative group">
-            {!file ? (
-              <div className="relative border-2 border-dashed border-sky-400/20 rounded-[2.5rem] p-12 text-center bg-sky-400/5 hover:bg-sky-400/10 transition-all">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  accept="image/*,application/pdf"
-                  onChange={handleFileUpload}
-                  className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                />
-                <Plus className="mx-auto mb-3 text-sky-400" size={32} />
-                <p className="font-black text-sm uppercase italic tracking-tighter">
-                  Stage Document
+              <span className="mt-2 text-sm text-foreground/60">
+                Choose a file from your device to get started.
+              </span>
+
+              <span className="mt-4 text-xs text-foreground/45">
+                PDF files are currently limited to 1–2 pages.
+              </span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-4 border border-border p-4">
+              <div className="flex size-11 shrink-0 items-center justify-center bg-background text-primary">
+                <FileType size={22} />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-foreground">
+                  {file.name}
                 </p>
-                <p className="text-[9px] opacity-40 font-bold uppercase tracking-widest mt-1">
-                  JPG, PNG, OR 2-PAGE PDF
+                <p className="mt-1 text-xs text-foreground/55">
+                  {(file.size / 1024).toFixed(1)} KB
                 </p>
               </div>
-            ) : (
-              <div className="bg-white/5 border border-white/10 p-5 rounded-2xl flex items-center justify-between">
-                <div className="flex items-center gap-4 truncate">
-                  <div className="p-3 bg-sky-400/10 rounded-xl text-sky-400">
-                    <FileType size={20} />
-                  </div>
-                  <div className="truncate">
-                    <p className="font-black text-sm truncate uppercase italic">
-                      {file.name}
-                    </p>
-                    <p className="text-[10px] opacity-50 font-mono">
-                      {(file.size / 1024).toFixed(1)} KB
+
+              {!isProcessing && !result && (
+                <button
+                  type="button"
+                  onClick={reset}
+                  aria-label="Remove selected file"
+                  className="flex size-8 shrink-0 items-center justify-center text-foreground/50 transition hover:bg-background hover:text-foreground"
+                >
+                  <X size={17} />
+                </button>
+              )}
+            </div>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/pdf,image/*"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+
+          {/* Compression target */}
+          {file && !result && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <label
+                  htmlFor="compression-target"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Target size
+                </label>
+
+                <span className="text-sm font-semibold tabular-nums text-primary">
+                  {target} KB
+                </span>
+              </div>
+
+              <input
+                id="compression-target"
+                type="range"
+                min={10}
+                max={1000}
+                step={10}
+                value={target}
+                onChange={(event) => setTarget(Number(event.target.value))}
+                disabled={isProcessing}
+                className="w-full cursor-pointer accent-primary disabled:cursor-not-allowed"
+              />
+
+              <div className="flex justify-between text-xs text-foreground/45">
+                <span>10 KB</span>
+                <span>1,000 KB</span>
+              </div>
+
+              <p className="text-xs leading-5 text-foreground/55">
+                The final size can vary depending on the original file and its
+                contents.
+              </p>
+            </div>
+          )}
+
+          {/* Error message */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                className="flex items-start gap-3 border border-red-500/25 bg-red-500/5 p-4"
+                role="alert"
+              >
+                <AlertTriangle
+                  size={18}
+                  className="mt-0.5 shrink-0 text-red-500"
+                />
+                <p className="text-sm leading-6 text-foreground">{error}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Result */}
+          <AnimatePresence>
+            {result && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="border border-border p-5"
+              >
+                <div className="flex items-start gap-3">
+                  <CheckCircle2
+                    size={21}
+                    className="mt-0.5 shrink-0 text-primary"
+                  />
+
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold text-foreground">
+                      Compression complete
+                    </h3>
+                    <p className="mt-1 text-sm text-foreground/60">
+                      Your processed file is ready to download.
                     </p>
                   </div>
                 </div>
+
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  <div className="border border-border bg-background p-3">
+                    <p className="text-xs text-foreground/55">Final size</p>
+                    <p className="mt-1 text-lg font-semibold tabular-nums text-foreground">
+                      {result.finalSizeKB} KB
+                    </p>
+                  </div>
+
+                  <div className="border border-border bg-background p-3">
+                    <p className="text-xs text-foreground/55">Size reduced</p>
+                    <p className="mt-1 text-lg font-semibold tabular-nums text-primary">
+                      {result.savedPercent}%
+                    </p>
+                  </div>
+                </div>
+
                 <button
-                  onClick={reset}
-                  className="p-2 hover:text-red-500 transition-colors"
+                  type="button"
+                  onClick={downloadFile}
+                  className="mt-5 inline-flex w-full items-center justify-center gap-2 bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent"
                 >
-                  <X size={18} />
+                  <ArrowDownToLine size={17} />
+                  Download reduced file
                 </button>
-              </div>
-            )}
-          </div>
 
-          {/* KB Selection */}
-          <div className="grid grid-cols-4 gap-2">
-            {[25, 50, 100, 200].map((kb) => (
-              <button
-                key={kb}
-                onClick={() => setTarget(kb)}
-                className={`py-3 rounded-xl text-xs font-black border transition-all uppercase italic ${
-                  target === kb
-                    ? "bg-sky-400 text-black border-sky-400"
-                    : "bg-white/5 border-transparent opacity-40 hover:opacity-100"
-                }`}
-              >
-                {kb}KB
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={onReduce}
-            disabled={!file || isProcessing}
-            className="w-full flex items-center justify-center gap-3 py-5 bg-sky-400 text-black font-black rounded-2xl shadow-xl shadow-sky-400/20 disabled:opacity-20 transition-all active:scale-[0.98]"
-          >
-            {isProcessing ? (
-              <Loader2 className="animate-spin" size={20} />
-            ) : (
-              <Zap size={20} fill="black" />
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="mt-3 w-full px-5 py-2.5 text-sm font-medium text-foreground/65 transition hover:text-foreground"
+                >
+                  Compress another file
+                </button>
+              </motion.div>
             )}
-            <span className="uppercase tracking-tighter italic">
-              {isProcessing ? "Processing..." : `Reduce to ${target}KB`}
-            </span>
-          </button>
+          </AnimatePresence>
+
+          {/* Main action */}
+          {file && !result && (
+            <button
+              type="button"
+              onClick={onReduce}
+              disabled={isProcessing}
+              className="inline-flex w-full items-center justify-center gap-2 bg-primary px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 size={17} className="animate-spin" />
+                  Processing file...
+                </>
+              ) : (
+                <>
+                  <Zap size={17} />
+                  Reduce file size
+                </>
+              )}
+            </button>
+          )}
+
+          <div className="flex items-center justify-center gap-2 border-t border-border pt-4 text-xs text-foreground/50">
+            <CheckCircle2 size={14} className="text-primary" />
+            <span>Files are processed locally in your browser.</span>
+          </div>
         </div>
-      )}
-    </div>
+      </div>
+    </section>
   );
 }
