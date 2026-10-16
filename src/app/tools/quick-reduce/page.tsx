@@ -1,41 +1,37 @@
-"use client";
-
 import ReduceWorkspace from "@/features/reduce/ReduceWorkspace";
-import { motion } from "framer-motion";
-import { Zap } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
+import MotionReveal from "@/components/ui/MotionReveal";
 
 export default function QuickReducePage() {
   return (
-    <main className="pt-32 pb-20 px-6 min-h-screen flex flex-col items-center">
-      <section className="max-w-4xl mx-auto text-center mb-12">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest mb-6 text-primary"
-        >
-          <Zap size={12} fill="currentColor" /> Strict Privacy
-        </motion.div>
+    <main className="min-h-screen px-4 pb-20 pt-28 sm:px-6 sm:pt-32">
+      <section className="mx-auto mb-12 max-w-4xl text-center">
+        <MotionReveal>
+          <div className="mb-6 inline-flex items-center gap-2 border-y border-border py-2 text-xs font-medium text-foreground/65">
+            <ShieldCheck size={15} className="text-primary" />
+            <span>Private file processing</span>
+            <span className="mx-1 h-3 w-px bg-border" />
+            <span>No cloud uploads</span>
+          </div>
+        </MotionReveal>
 
-        <motion.h1
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-5xl md:text-7xl font-black tracking-tighter mb-6 leading-[0.9] uppercase"
-        >
-          QUICK<span className="text-primary italic">REDUCE.</span>
-        </motion.h1>
+        <MotionReveal delay={0.08}>
+          <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl md:text-6xl">
+            Reduce PDF size
+            <span className="mt-1 block text-primary">Without the hassle.</span>
+          </h1>
+        </MotionReveal>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-foreground/60 max-w-xl mx-auto font-medium text-lg"
-        >
-          Compress PDFs and Images to strict size limits without uploading a
-          single byte to any server.
-        </motion.p>
+        <MotionReveal delay={0.16}>
+          <p className="mx-auto max-w-xl text-base leading-7 text-foreground/65 sm:text-lg sm:leading-8">
+            Compress PDFs to meet strict file-size limits for applications,
+            online forms, and document uploads. Adjust the output size and
+            process your files directly in your browser.
+          </p>
+        </MotionReveal>
       </section>
 
-      <section className="w-full">
+      <section className="mx-auto w-full max-w-6xl">
         <ReduceWorkspace />
       </section>
     </main>
