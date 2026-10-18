@@ -1,4 +1,11 @@
-import { Mail, ExternalLink, Shield, Zap } from "lucide-react";
+import {
+  Mail,
+  ExternalLink,
+  Shield,
+  Zap,
+  Github,
+  Linkedin,
+} from "lucide-react";
 import ButtonFooter from "./Button";
 
 export default function Footer() {
@@ -11,20 +18,18 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12 text-center md:text-left">
           <div className="space-y-4">
             <div className="flex items-center justify-center md:justify-start gap-2">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                <Zap
-                  size={20}
-                  fill="currentColor"
-                  className="text-background"
-                />
+              <div className="text-accent flex items-center justify-center">
+                <Zap size={20} fill="currentColor" />
               </div>
               <h3 className="text-xl font-black tracking-tighter uppercase italic">
-                Quick<span className="text-primary">Suite</span>
+                Quick<span className="text-primary tracking-widest">Suite</span>
               </h3>
             </div>
+
             <p className="text-sm leading-relaxed max-w-sm font-medium opacity-70">
-              Industrial-grade file tools built for the Quick Community. Data
-              never leaves your device.
+              Free and open source tools for everyone. No subscriptions, no ads,
+              and no data tracking. Your files stay on your device, giving you
+              complete privacy and control.
             </p>
           </div>
 
@@ -35,22 +40,22 @@ export default function Footer() {
             <ul className="space-y-4 text-sm font-bold">
               <li>
                 <a
-                  href="https://quicktrack-navy.vercel.app"
+                  href="https://offline-tracker-tawny.vercel.app"
                   target="_blank"
                   className="flex items-center justify-center md:justify-start gap-2 hover:text-primary transition-colors"
                 >
                   <ExternalLink size={14} />
-                  <span>QuickTrack (Expense)</span>
+                  <span>Offline Track</span>
                 </a>
               </li>
               <li>
                 <a
-                  href="https://quickinvoices.vercel.app/"
+                  href="https://offline-invoice.vercel.app"
                   target="_blank"
                   className="flex items-center justify-center md:justify-start gap-2 hover:text-primary transition-colors"
                 >
                   <ExternalLink size={14} />
-                  <span>QuickInvoice (Invoice)</span>
+                  <span>Offline Invoice </span>
                 </a>
               </li>
 
@@ -62,12 +67,36 @@ export default function Footer() {
             <h4 className="font-black text-sm uppercase tracking-widest">
               Support
             </h4>
-            <a
-              href={`mailto:${yourEmail}`}
-              className="inline-flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-xl font-bold transition-all hover:bg-primary w-fit text-sm"
-            >
-              <Mail size={16} /> Email Developer
-            </a>
+
+            <div className="flex items-center gap-4">
+              <a
+                href={`mailto:${yourEmail}`}
+                aria-label="Email Developer"
+                className="text-foreground/60 transition-colors hover:text-primary"
+              >
+                <Mail size={18} />
+              </a>
+
+              <a
+                href="https://github.com/md-faizanahmad"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub"
+                className="text-foreground/60 transition-colors hover:text-primary"
+              >
+                <Github size={18} />
+              </a>
+
+              <a
+                href="https://www.linkedin.com/in/mdfaizanahmad"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                className="text-foreground/60 transition-colors hover:text-primary"
+              >
+                <Linkedin size={18} />
+              </a>
+            </div>
           </div>
         </div>
 
