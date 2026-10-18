@@ -172,11 +172,12 @@ Please keep contributions focused, maintain consistent code quality, and documen
 
 ## 📜 License
 
-QuickSuite is intended to be freely available to the public.
+QuickSuite is licensed under the [MIT License](./LICENSE).
 
-**The project's actual reuse, modification, and redistribution permissions depend on its repository license.** Add a `LICENSE` file and specify the license here before claiming that the code is open source.
+You are free to use, copy, modify, distribute, and use this software for
+personal or commercial purposes, subject to the terms of the license.
 
-Until a license is published, don't assume that the code can legally be reused or redistributed.
+See the [LICENSE](./LICENSE) file for the complete terms.
 
 ---
 
